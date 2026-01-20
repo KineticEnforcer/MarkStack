@@ -1,0 +1,32 @@
+{
+  "name": "markstack",
+  "version": "1.0.0",
+  "description": "Static site generator for markdown-based knowledge bases",
+  "main": "build.js",
+  "scripts": {
+    "build": "node build.js",
+    "watch": "node build.js --watch",
+    "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
+    "serve": "npx serve dist"
+  },
+  "keywords": [
+    "markdown",
+    "static-site",
+    "knowledge-base",
+    "documentation"
+  ],
+  "author": "KineticEnforcer",
+  "license": "GPL-3.0",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "chokidar": "^3.5.3",
+    "gray-matter": "^4.0.3",
+    "highlight.js": "^11.9.0",
+    "markdown-it": "^14.0.0",
+    "markdown-it-anchor": "^8.6.7",
+    "markdown-it-footnote": "^4.0.0",
+    "markdown-it-task-lists": "^2.1.1"
+  }
+}

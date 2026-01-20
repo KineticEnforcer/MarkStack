@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    // Apply theme immediately to prevent flash of unstyled content (FOUC)
+    (function() {
+      const theme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <script>
+    // Apply sidebar state immediately to prevent layout shift
+    (function() {
+      const savedState = localStorage.getItem('sidebar-state');
+      if (savedState === 'collapsed') {
+        document.documentElement.classList.add('sidebar-collapsed');
+      }
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{description}}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta property="og:title" content="{{title}} | {{siteTitle}}">
+  <meta property="og:description" content="{{description}}">
+  <meta property="og:url" content="{{url}}">
+  <meta property="og:type" content="website">
+  <title>{{title}} | {{siteTitle}}</title>
+  <link rel="stylesheet" href="{{baseUrl}}/css/main.css">
+  <link rel="stylesheet" href="{{baseUrl}}/css/hljs-theme.css">
+  <link rel="icon" href="{{baseUrl}}/svg/logo.svg" type="image/svg+xml">
+</head>
+<body data-baseurl="{{baseUrl}}">
+  <header class="site-header">
+    <div class="header-container">
+      <a href="{{baseUrl}}/" class="site-logo">
+        <img src="{{baseUrl}}/svg/logo.svg" alt="Logo" class="logo-icon" width="32" height="32">
+        <span class="logo-text">{{siteTitle}}</span>
+      </a>
+      
+      <div class="header-search">
+        <div class="search-container">
+          <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          <input type="text" id="search-input" placeholder="Search documentation..." autocomplete="off">
+          <kbd class="search-shortcut">Ctrl+K</kbd>
+        </div>
+        <div id="search-results" class="search-results"></div>
+      </div>
+      
+      <div class="header-actions">
+        <a href="https://github.com/KineticEnforcer/MarkStack" target="_blank" rel="noopener noreferrer" class="github-link" aria-label="View on GitHub">
+          <svg class="github-icon" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+        </a>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+          <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="breadcrumb-bar">
+    <div class="breadcrumb-container">
+      {{breadcrumbs}}
+    </div>
+  </div>
+
+  <button class="sidebar-collapse-toggle" id="sidebar-toggle" title="Toggle sidebar">
+    <svg class="sidebar-toggle-icon collapse-icon" viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
+      <path d="M7.78 12.53a.75.75 0 0 1-1.06 0L2.47 8.28a.75.75 0 0 1 0-1.06l4.25-4.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042L4.81 7h7.44a.75.75 0 0 1 0 1.5H4.81l2.97 2.97a.75.75 0 0 1 0 1.06Z"/>
+    </svg>
+    <svg class="sidebar-toggle-icon expand-icon" viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
+      <path d="M8.22 3.47a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l2.97-2.97H3.75a.75.75 0 0 1 0-1.5h7.44L8.22 4.53a.75.75 0 0 1 0-1.06Z"/>
+    </svg>
+  </button>
+
+  <div class="main-layout{{pageClass}}">
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        {{sidebar}}
+      </nav>
+    </aside>
+    
+    <main class="content">
+      <article class="article">
+        {{content}}
+      </article>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <p>Built with <a href="https://github.com/KineticEnforcer/MarkStack" target="_blank" rel="noopener noreferrer">MarkStack</a></p>
+      <p class="copyright">{{copyrightText}}</p>
+    </div>
+  </footer>
+
+  <script src="{{baseUrl}}/js/app.js"></script>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ 
+      startOnLoad: true,
+      theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+    });
+  </script>
+</body>
+</html>

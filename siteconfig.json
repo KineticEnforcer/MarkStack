@@ -1,0 +1,10 @@
+{
+  "siteTitle": "My Knowledge Base",
+  "headerTitle": "Knowledge Base",
+  "siteSubtitle": "Your documentation site powered by MarkStack.",
+  "siteUrl": "https://example.com",
+  "baseUrl": "",
+  "defaultDescription": "Documentation and knowledge base",
+  "showHero": true,
+  "copyrightText": "© 2026 Your Name. All rights reserved."
+}

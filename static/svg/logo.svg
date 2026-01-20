@@ -1,0 +1,12 @@
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Stacked layers - back to front -->
+  <rect x="6" y="2" width="20" height="24" rx="2" fill="#3b4252" stroke="#4c566a" stroke-width="1"/>
+  <rect x="4" y="4" width="20" height="24" rx="2" fill="#434c5e" stroke="#4c566a" stroke-width="1"/>
+  <rect x="2" y="6" width="20" height="24" rx="2" fill="#4c566a" stroke="#5e81ac" stroke-width="1.5"/>
+  
+  <!-- Markdown M on front layer -->
+  <path d="M5 24V14l3.5 5 3.5-5v10" stroke="#88c0d0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- Down arrow (markdown symbol) -->
+  <path d="M17.5 14v9m-2.5-2.5l2.5 2.5 2.5-2.5" stroke="#88c0d0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
