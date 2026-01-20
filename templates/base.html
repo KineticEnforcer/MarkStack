@@ -18,7 +18,7 @@
       }
     })();
   </script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content="{{description}}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,11 +28,29 @@
   <meta property="og:url" content="{{url}}">
   <meta property="og:type" content="website">
   <title>{{title}} | {{siteTitle}}</title>
-  <link rel="stylesheet" href="{{baseUrl}}/css/main.css">
-  <link rel="stylesheet" href="{{baseUrl}}/css/hljs-theme.css">
+  <link rel="stylesheet" href="{{baseUrl}}/css/main.css?v=7">
+  <link rel="stylesheet" href="{{baseUrl}}/css/hljs-theme.css?v=7">
   <link rel="icon" href="{{baseUrl}}/svg/logo.svg" type="image/svg+xml">
 </head>
 <body data-baseurl="{{baseUrl}}">
+  <script>
+    // Apply mobile menu state ASAP to avoid flicker on mobile nav
+    (function() {
+      if (sessionStorage.getItem('mobile-menu-open') === 'true') {
+        document.documentElement.classList.add('mobile-menu-open');
+        // Body may not exist yet; apply once ready
+        if (document.body) {
+          document.body.classList.add('mobile-menu-open');
+          sessionStorage.removeItem('mobile-menu-open');
+        } else {
+          document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add('mobile-menu-open');
+            sessionStorage.removeItem('mobile-menu-open');
+          });
+        }
+      }
+    })();
+  </script>
   <header class="site-header">
     <div class="header-container">
       <a href="{{baseUrl}}/" class="site-logo">
@@ -71,6 +89,16 @@
     </div>
   </header>
 
+  <!-- Mobile menu toggle - OUTSIDE header to escape backdrop-filter stacking context -->
+  <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
+    <svg class="menu-icon-open" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12h18M3 6h18M3 18h18"></path>
+    </svg>
+    <svg class="menu-icon-close" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M18 6L6 18M6 6l12 12"></path>
+    </svg>
+  </button>
+
   <div class="breadcrumb-bar">
     <div class="breadcrumb-container">
       {{breadcrumbs}}
@@ -85,6 +113,8 @@
       <path d="M8.22 3.47a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l2.97-2.97H3.75a.75.75 0 0 1 0-1.5h7.44L8.22 4.53a.75.75 0 0 1 0-1.06Z"/>
     </svg>
   </button>
+
+  <div class="mobile-overlay" id="mobile-overlay"></div>
 
   <div class="main-layout{{pageClass}}">
     <aside class="sidebar">
@@ -107,7 +137,7 @@
     </div>
   </footer>
 
-  <script src="{{baseUrl}}/js/app.js"></script>
+  <script src="{{baseUrl}}/js/app.js?v=7"></script>
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
     mermaid.initialize({ 

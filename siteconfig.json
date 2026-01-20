@@ -2,9 +2,9 @@
   "siteTitle": "My Knowledge Base",
   "headerTitle": "Knowledge Base",
   "siteSubtitle": "Your documentation site powered by MarkStack.",
-  "siteUrl": "https://example.com",
+  "siteUrl": "https://markstack.app",
   "baseUrl": "",
   "defaultDescription": "Documentation and knowledge base",
   "showHero": true,
-  "copyrightText": "© 2026 Your Name. All rights reserved."
+  "copyrightText": "© 2026 MarkStack.app. All rights reserved."
 }

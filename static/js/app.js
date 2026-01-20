@@ -50,6 +50,7 @@
   const sidebarToggle = document.getElementById('sidebar-toggle');
   const mainLayout = document.querySelector('.main-layout');
   const body = document.body;
+  const sidebarNav = document.querySelector('.sidebar-nav');
   
   // Get saved sidebar state
   function getSavedSidebarState() {
@@ -89,9 +90,93 @@
   }
 
   // ============================================
+  // Mobile Menu Toggle
+  // ============================================
+  const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+  const mobileOverlay = document.getElementById('mobile-overlay');
+  
+  function closeMobileMenu() {
+    body.classList.remove('mobile-menu-open');
+    document.documentElement.classList.remove('mobile-menu-open');
+    sessionStorage.removeItem('mobile-menu-open');
+  }
+  
+  function openMobileMenu() {
+    body.classList.add('mobile-menu-open');
+    document.documentElement.classList.add('mobile-menu-open');
+  }
+  
+  function toggleMobileMenu() {
+    if (body.classList.contains('mobile-menu-open')) {
+      closeMobileMenu();
+    } else {
+      openMobileMenu();
+    }
+  }
+  
+  // Restore mobile menu state on page load (for folder navigation)
+  if (sessionStorage.getItem('mobile-menu-open') === 'true') {
+    openMobileMenu();
+    sessionStorage.removeItem('mobile-menu-open');
+  }
+  
+  // Robust touch + click handling for iOS Chrome/Safari
+  if (mobileMenuToggle) {
+    let touchHandled = false;
+    
+    // touchend fires quickly on iOS; use passive to avoid blocking
+    mobileMenuToggle.addEventListener('touchend', function() {
+      touchHandled = true;
+      toggleMobileMenu();
+      setTimeout(function() { touchHandled = false; }, 200);
+    }, { passive: true });
+    
+    // click as fallback (desktop / non-touch)
+    mobileMenuToggle.addEventListener('click', function() {
+      if (!touchHandled) {
+        toggleMobileMenu();
+      }
+    });
+  }
+  
+  if (mobileOverlay) {
+    mobileOverlay.addEventListener('touchend', closeMobileMenu, { passive: true });
+    mobileOverlay.addEventListener('click', closeMobileMenu);
+  }
+  
+  // Close mobile menu only when clicking a file link (not folder links)
+  if (sidebarNav) {
+    sidebarNav.addEventListener('click', function(e) {
+      const link = e.target.closest('a');
+      if (!link) return;
+      
+      // Check if this is a file link (not inside a folder header)
+      const isFileLink = e.target.closest('.sidebar-file');
+      const isFolderToggle = e.target.closest('.sidebar-toggle');
+      const isFolderLink = e.target.closest('.sidebar-folder');
+      
+      // Only close menu when clicking on actual file links
+      if (isFileLink && !isFolderToggle) {
+        closeMobileMenu();
+      }
+      
+      // If clicking a folder link (not the toggle), save menu state before navigation
+      if (isFolderLink && !isFolderToggle && body.classList.contains('mobile-menu-open')) {
+        sessionStorage.setItem('mobile-menu-open', 'true');
+      }
+    });
+  }
+  
+  // Close mobile menu on escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && body.classList.contains('mobile-menu-open')) {
+      closeMobileMenu();
+    }
+  });
+
+  // ============================================
   // Sidebar Tree Toggle
   // ============================================
-  const sidebarNav = document.querySelector('.sidebar-nav');
   
   // Chevron SVG icons
   const chevronRight = '<svg class="sidebar-chevron" viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06Z"/></svg>';
