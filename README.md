@@ -320,7 +320,7 @@ MarkStack generates static HTML files that can be hosted on any web server or st
 | **AWS S3** | Upload contents of `dist/` to an S3 bucket configured for static hosting |
 | **Self-hosted** | Copy contents of `dist/` to your web server document root |
 
-For automated deployments, see the [CI/CD Integration](content/build-deploy/cicd-integration.md) documentation.
+For automated deployments, see the [CI/CD Integration](content/build-deploy/ci-cd.md) documentation.
 
 ---
 
