@@ -32,7 +32,31 @@
 
 ## Design Philosophy
 
-MarkStack was intentionally developed on a single-core virtual machine with 1GB of RAM. This constraint-driven approach ensures the generator runs efficiently on virtually any hardware, from a Raspberry Pi Zero 2 W to a full production server. The entire build process uses a single JavaScript file with minimal dependencies, resulting in fast builds and predictable resource consumption regardless of where you deploy.
+MarkStack is built on a simple premise: **Documentation should be accessible, robust, and permanent.** It is designed to serve all walks of life, from the student building a second brain, to the Dungeon Master organizing a campaign, to the Enterprise Architect enforcing ISO compliance.
+
+**Built for the "Potato" & the Cloud**
+I intentionally developed MarkStack on a single-core, 1GB RAM virtual machine. Why? Because if it runs there, it runs *anywhere*.
+* **For the Hobbyist:** Run it on a Raspberry Pi Zero 2 W, an old laptop, or a free cloud tier. It respects your hardware.
+* **For the Enterprise:** It scales effortlessly in high-availability clusters with zero resource bloat.
+
+**Radical Simplicity: Vanilla by Design**
+Modern web development has become over-complicated. MarkStack rejects this. We use **Vanilla JavaScript** and a single file build process. There is no complex architecture to learn, no "magic" black-box frameworks, and no fragility.
+* **Hackable:** Because the code is simple and transparent, you can read it, understand it, and modify it to fit your exact needs.
+* **Future-Proof:** With no heavy dependencies, your documentation site won't break just because an npm package updated 5 years from now.
+
+**Enterprise Grade: Compliance & Audit**
+In professional environments, documentation is a legal record. MarkStack solves "documentation rot" by treating your docs *as code*.
+* **The Audit Trail:** You get an immutable Git history for every comma changed. Strict Pull Request workflows mean nothing goes live without approval. This is perfect for ISO record-keeping.
+* **Accountability:** No more "mystery edits." You know exactly who wrote that API guide, who approved it, and when it went live.
+
+**The "Headless" Brain: From D&D to Ph.D.**
+You don't need to be a systems engineer to have a powerful, globally accessible knowledge base. MarkStack turns GitHub (or any private Git repo) into your personal Content Management System.
+* **The Workflow:** Creating a study guide for a new subject? Managing lore for your D&D campaign? Just edit your files in the browser on GitHub (even on mobile!) and your site updates automatically if you setup the workflow, or if you have a site you use Cloudflare Pages or GitHub Pages with, it updated with each update to the repo!
+* **The Freedom:** You get the ease of a note-taking app with the power of a static site. Your data remains yours. It is private, portable, and secure, stored in simple Markdown files that you will always own.
+
+**OFF LINE MODE!**
+* **Take it with you:** You can just clone the repo, build your first few pages and copy it to a USB, take it with you and use any text editor on any computer to edit the .md files! I REALLY recommend Caddy, it has a portable version for every OS, be it MacOS or Linux or Windows so basically all you have to do is just copy the the executable / binary to the dist folder and run it after you ran the script to build your files.
+You can find it here: [Caddy Offical Repo](https://github.com/caddyserver/caddy/releases)
 
 ---
 
