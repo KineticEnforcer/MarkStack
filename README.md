@@ -40,7 +40,7 @@ I intentionally developed MarkStack on a single-core, 1GB RAM virtual machine. W
 * **For the Enterprise:** It scales effortlessly in high-availability clusters with zero resource bloat.
 
 **Radical Simplicity: Vanilla by Design**
-Modern web development has become over-complicated. MarkStack rejects this. We use **Vanilla JavaScript** and a single file build process. There is no complex architecture to learn, no "magic" black-box frameworks, and no fragility.
+Modern web development has become over-complicated. MarkStack rejects this. MarkStack is built with **Vanilla JavaScript** and a single file build process. There is no complex architecture to learn, no "magic" black-box frameworks, and no fragility.
 * **Hackable:** Because the code is simple and transparent, you can read it, understand it, and modify it to fit your exact needs.
 * **Future-Proof:** With no heavy dependencies, your documentation site won't break just because an npm package updated 5 years from now.
 
