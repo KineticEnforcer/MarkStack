@@ -1,0 +1,2247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    (function() {
+      const theme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarkStack Editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/hljs-theme.css">
+  <link rel="icon" href="/svg/logo.svg" type="image/svg+xml">
+  <style>
+    /* ============================================
+       Editor-Specific Styles
+       ============================================ */
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    body {
+      padding-top: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Editor Header */
+    .editor-header {
+      height: 60px;
+      background-color: var(--color-bg-secondary);
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-lg);
+      flex-shrink: 0;
+    }
+    
+    .editor-logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      color: var(--color-text-primary);
+      font-weight: 600;
+      font-size: var(--font-size-lg);
+      text-decoration: none;
+    }
+    
+    .editor-logo:hover {
+      text-decoration: none;
+    }
+    
+    .editor-logo img {
+      width: 32px;
+      height: 32px;
+    }
+    
+    .editor-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    
+    .editor-title-text {
+      color: var(--color-text-secondary);
+      font-weight: 400;
+    }
+    
+    .editor-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    
+    .editor-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-xs);
+      height: 36px;
+      padding: 0 var(--space-md);
+      background-color: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-sm);
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .editor-btn:hover {
+      background-color: var(--color-bg-hover);
+      color: var(--color-text-primary);
+    }
+    
+    .editor-btn.primary {
+      background-color: var(--color-accent);
+      border-color: var(--color-accent);
+      color: white;
+    }
+    
+    .editor-btn.primary:hover {
+      background-color: var(--color-accent-hover);
+    }
+    
+    .editor-btn.danger {
+      background-color: var(--color-caution-border);
+      border-color: var(--color-caution-border);
+      color: white;
+    }
+    
+    .editor-btn.danger:hover {
+      background-color: #b91c1c;
+    }
+    
+    .confirm-modal-message {
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-base);
+      line-height: 1.5;
+      margin: 0;
+    }
+    
+    .editor-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    /* Theme toggle - same style as site */
+    .theme-toggle {
+      width: 36px;
+      height: 36px;
+    }
+    
+    /* Main Editor Layout */
+    .editor-main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    
+    /* File Tree Panel */
+    .file-tree-panel {
+      width: 280px;
+      background-color: var(--color-bg-secondary);
+      border-right: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    
+    .file-tree-header {
+      padding: var(--space-md);
+      border-bottom: 1px solid var(--color-border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .file-tree-title {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--color-text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .file-tree-actions {
+      display: flex;
+      gap: var(--space-xs);
+    }
+    
+    .file-tree-btn {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--border-radius);
+      color: var(--color-text-tertiary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .file-tree-btn:hover {
+      background-color: var(--color-bg-hover);
+      border-color: var(--color-border);
+      color: var(--color-text-primary);
+    }
+    
+    .file-tree-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    .file-tree-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-sm);
+    }
+    
+    /* File Tree Items */
+    .tree-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .tree-list .tree-list {
+      padding-left: var(--space-md);
+    }
+    
+    .tree-item {
+      margin-bottom: 2px;
+    }
+    
+    .tree-item-header {
+      display: flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: background-color var(--transition-fast);
+      gap: var(--space-xs);
+    }
+    
+    .tree-item-header:hover {
+      background-color: var(--color-bg-hover);
+    }
+    
+    .tree-item-header.active {
+      background-color: var(--color-bg-hover);
+      color: var(--color-text-link);
+    }
+    
+    .tree-item-header.active .tree-icon {
+      color: var(--color-text-link);
+    }
+    
+    .tree-chevron {
+      width: 16px;
+      height: 16px;
+      color: var(--color-text-tertiary);
+      flex-shrink: 0;
+      transition: transform var(--transition-fast);
+    }
+    
+    .tree-chevron.expanded {
+      transform: rotate(90deg);
+    }
+    
+    .tree-chevron.hidden {
+      visibility: hidden;
+    }
+    
+    .tree-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      color: var(--color-text-secondary);
+    }
+    
+    .tree-name {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+    
+    .tree-item-header:hover .tree-name,
+    .tree-item-header.active .tree-name {
+      color: var(--color-text-primary);
+    }
+    
+    .tree-children {
+      display: none;
+    }
+    
+    .tree-children.expanded {
+      display: block;
+    }
+    
+    /* Editor Panel */
+    .editor-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    
+    .editor-toolbar {
+      height: 44px;
+      background-color: var(--color-bg-secondary);
+      border-bottom: 1px solid var(--color-border-subtle);
+      display: flex;
+      align-items: center;
+      padding: 0 var(--space-md);
+      gap: var(--space-md);
+    }
+    
+    .editor-file-path {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      font-family: var(--font-mono);
+    }
+    
+    .editor-file-path .path-segment {
+      color: var(--color-text-tertiary);
+    }
+    
+    .editor-file-path .path-file {
+      color: var(--color-text-primary);
+      font-weight: 500;
+    }
+    
+    .editor-unsaved {
+      font-size: var(--font-size-xs);
+      color: var(--color-warning-text);
+      background-color: var(--color-warning-bg);
+      padding: 2px 8px;
+      border-radius: 10px;
+      display: none;
+    }
+    
+    .editor-unsaved.visible {
+      display: inline-block;
+    }
+    
+    .editor-toolbar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    
+    .scroll-sync-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-xs);
+      padding: 4px 10px;
+      background-color: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius);
+      color: var(--color-text-secondary);
+      font-family: var(--font-sans);
+      font-size: var(--font-size-xs);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .scroll-sync-btn:hover {
+      background-color: var(--color-bg-hover);
+      color: var(--color-text-primary);
+    }
+    
+    .scroll-sync-btn.active {
+      background-color: var(--color-accent-subtle);
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+    
+    .scroll-sync-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+    
+    .scroll-sync-btn .icon-locked {
+      display: none;
+    }
+    
+    .scroll-sync-btn .icon-unlocked {
+      display: block;
+    }
+    
+    .scroll-sync-btn.active .icon-locked {
+      display: block;
+    }
+    
+    .scroll-sync-btn.active .icon-unlocked {
+      display: none;
+    }
+    
+    .editor-content {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    
+    /* Split View */
+    .split-editor {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--color-border);
+      min-width: 0;
+      transition: flex var(--transition-normal), min-width var(--transition-normal), opacity var(--transition-normal);
+    }
+    
+    /* Collapsed editor state */
+    .editor-collapsed .split-editor {
+      flex: 0;
+      min-width: 0;
+      max-width: 0;
+      overflow: hidden;
+      opacity: 0;
+      border-right: none;
+    }
+    
+    .editor-collapsed .split-preview {
+      flex: 1;
+    }
+    
+    .editor-collapsed .editor-collapse-toggle .collapse-icon {
+      display: none;
+    }
+    
+    .editor-collapsed .editor-collapse-toggle .expand-icon {
+      display: block;
+    }
+    
+    /* Editor Collapse Toggle Button - positioned at left edge of preview */
+    .editor-collapse-toggle {
+      position: absolute;
+      top: 50%;
+      left: -16px;
+      transform: translateY(-50%);
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      border-radius: var(--border-radius);
+      transition: all var(--transition-fast);
+      z-index: 10;
+    }
+    
+    .editor-collapse-toggle:hover {
+      background-color: var(--color-bg-hover);
+      color: var(--color-text-primary);
+    }
+    
+    .editor-collapse-toggle .expand-icon {
+      display: none;
+    }
+    
+    .editor-collapse-toggle .collapse-icon {
+      display: block;
+    }
+    
+    /* When collapsed, button stays at left edge of preview */
+    .editor-collapsed .editor-collapse-toggle {
+      left: var(--space-sm);
+    }
+    
+    /* Preview needs position relative for the button */
+    .split-preview {
+      position: relative;
+    }
+    
+    .split-header {
+      height: 36px;
+      background-color: var(--color-bg-tertiary);
+      border-bottom: 1px solid var(--color-border-subtle);
+      display: flex;
+      align-items: center;
+      padding: 0 var(--space-md);
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .split-preview {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    
+    /* Markdown Editor */
+    .markdown-editor {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .markdown-textarea {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      padding: var(--space-md);
+      background-color: transparent;
+      border: none;
+      color: var(--color-text-primary);
+      font-family: var(--font-mono);
+      font-size: var(--font-size-sm);
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+      caret-color: var(--color-text-primary);
+      /* Make text invisible but keep caret visible */
+      -webkit-text-fill-color: transparent;
+      overflow-y: auto;
+    }
+    
+    .markdown-textarea::placeholder {
+      -webkit-text-fill-color: var(--color-text-tertiary);
+      color: var(--color-text-tertiary);
+    }
+    
+    /* Line numbers container */
+    .editor-with-lines {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    
+    /* Highlight container - holds both backdrop and textarea */
+    .editor-highlight-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Syntax highlight backdrop */
+    .markdown-highlight {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: var(--space-md);
+      font-family: var(--font-mono);
+      font-size: var(--font-size-sm);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-y: auto;
+      pointer-events: none;
+      color: var(--color-text-primary);
+      background-color: var(--color-bg-primary);
+    }
+    
+    /* Markdown syntax highlighting colors */
+    .md-header { color: #d2a8ff; font-weight: bold; }
+    .md-bold { color: var(--color-text-primary); font-weight: bold; }
+    .md-italic { color: var(--color-text-primary); font-style: italic; }
+    .md-code { color: #a5d6ff; background-color: rgba(110, 118, 129, 0.2); border-radius: 3px; }
+    .md-code-block { color: #8b949e; }
+    .md-code-fence { color: #8b949e; }
+    .md-code-content { /* inherits hljs colors */ }
+    .md-link-text { color: #58a6ff; }
+    .md-link-url { color: #8b949e; }
+    .md-list { color: #ff7b72; }
+    .md-blockquote { color: #8b949e; }
+    .md-hr { color: #484f58; }
+    .md-frontmatter { color: #7ee787; }
+    .md-alert { color: #d29922; font-weight: bold; }
+    
+    [data-theme="light"] .md-header { color: #8250df; }
+    [data-theme="light"] .md-code { color: #0a3069; background-color: rgba(175, 184, 193, 0.2); }
+    [data-theme="light"] .md-code-block { color: #6e7781; }
+    [data-theme="light"] .md-code-fence { color: #6e7781; }
+    [data-theme="light"] .md-link-text { color: #0969da; }
+    [data-theme="light"] .md-link-url { color: #6e7781; }
+    [data-theme="light"] .md-list { color: #cf222e; }
+    [data-theme="light"] .md-blockquote { color: #6e7781; }
+    [data-theme="light"] .md-hr { color: #d0d7de; }
+    [data-theme="light"] .md-frontmatter { color: #116329; }
+    [data-theme="light"] .md-alert { color: #9a6700; }
+    
+    .line-numbers {
+      width: 50px;
+      padding: var(--space-md) var(--space-sm);
+      background-color: var(--color-bg-secondary);
+      border-right: 1px solid var(--color-border-subtle);
+      font-family: var(--font-mono);
+      font-size: var(--font-size-sm);
+      line-height: 1.6;
+      color: var(--color-text-tertiary);
+      text-align: right;
+      user-select: none;
+      overflow: hidden;
+    }
+    
+    .line-number {
+      height: 1.6em;
+    }
+    
+    /* Preview Panel */
+    .preview-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-xl);
+      background-color: var(--color-bg-primary);
+    }
+    
+    .preview-article {
+      max-width: 100%;
+    }
+    
+    /* Use article styles from main.css */
+    .preview-article h1, .preview-article h2, .preview-article h3,
+    .preview-article h4, .preview-article h5, .preview-article h6 {
+      color: var(--color-text-primary);
+      font-weight: 600;
+      line-height: 1.3;
+      margin-top: var(--space-xl);
+      margin-bottom: var(--space-md);
+    }
+    
+    .preview-article h1 {
+      font-size: var(--font-size-3xl);
+      padding-bottom: var(--space-md);
+      border-bottom: 1px solid var(--color-border);
+      margin-top: 0;
+    }
+    
+    .preview-article h2 {
+      font-size: var(--font-size-2xl);
+      padding-bottom: var(--space-sm);
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    
+    .preview-article h3 { font-size: var(--font-size-xl); }
+    .preview-article h4 { font-size: var(--font-size-lg); }
+    .preview-article h5, .preview-article h6 { font-size: var(--font-size-base); }
+    
+    .preview-article p { margin-bottom: var(--space-md); }
+    
+    .preview-article ul, .preview-article ol {
+      margin-bottom: var(--space-md);
+      padding-left: var(--space-xl);
+    }
+    
+    .preview-article li { margin-bottom: var(--space-xs); }
+    
+    .preview-article code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      background-color: var(--color-code-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--color-code-border);
+    }
+    
+    .preview-article pre {
+      margin-bottom: var(--space-md);
+      border-radius: var(--border-radius);
+      overflow-x: auto;
+    }
+    
+    .preview-article pre code {
+      display: block;
+      padding: var(--space-md);
+      background-color: var(--color-code-bg);
+      border: 1px solid var(--color-code-border);
+      border-radius: var(--border-radius);
+      font-size: var(--font-size-sm);
+      line-height: 1.5;
+    }
+    
+    .preview-article pre.hljs {
+      background-color: var(--color-code-bg);
+      border: 1px solid var(--color-code-border);
+      border-radius: var(--border-radius);
+      margin-bottom: var(--space-md);
+    }
+    
+    .preview-article pre.hljs code {
+      border: none;
+      padding: var(--space-md);
+    }
+    
+    .preview-article blockquote {
+      margin: 0 0 var(--space-md) 0;
+      padding: var(--space-md) var(--space-lg);
+      border-left: 4px solid var(--color-border);
+      background-color: var(--color-bg-secondary);
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+      color: var(--color-text-secondary);
+    }
+    
+    .preview-article blockquote > p:last-child { margin-bottom: 0; }
+    
+    .preview-article table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: var(--space-md);
+      font-size: var(--font-size-sm);
+    }
+    
+    .preview-article th, .preview-article td {
+      padding: var(--space-sm) var(--space-md);
+      text-align: left;
+      border: 1px solid var(--color-border);
+    }
+    
+    .preview-article th {
+      background-color: var(--color-bg-secondary);
+      font-weight: 700;
+    }
+    
+    .preview-article hr {
+      border: none;
+      border-top: 1px solid var(--color-border);
+      margin: var(--space-xl) 0;
+    }
+    
+    .preview-article a {
+      color: var(--color-text-link);
+      text-decoration: none;
+    }
+    
+    .preview-article a:hover {
+      text-decoration: underline;
+    }
+    
+    /* GitHub-style Alerts in Preview */
+    .preview-article blockquote.alert {
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--border-radius);
+    }
+    
+    .preview-article .alert-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-weight: 600;
+      margin-bottom: var(--space-xs);
+      font-size: var(--font-size-sm);
+    }
+    
+    .preview-article .alert-icon {
+      display: inline-flex;
+      width: 16px;
+      height: 16px;
+    }
+    
+    .preview-article .alert-icon svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+    
+    .preview-article .alert-note {
+      background-color: var(--color-note-bg);
+      border-left-color: var(--color-note-border);
+    }
+    .preview-article .alert-note .alert-title { color: var(--color-note-text); }
+    
+    .preview-article .alert-tip {
+      background-color: var(--color-tip-bg);
+      border-left-color: var(--color-tip-border);
+    }
+    .preview-article .alert-tip .alert-title { color: var(--color-tip-text); }
+    
+    .preview-article .alert-important {
+      background-color: var(--color-important-bg);
+      border-left-color: var(--color-important-border);
+    }
+    .preview-article .alert-important .alert-title { color: var(--color-important-text); }
+    
+    .preview-article .alert-warning {
+      background-color: var(--color-warning-bg);
+      border-left-color: var(--color-warning-border);
+    }
+    .preview-article .alert-warning .alert-title { color: var(--color-warning-text); }
+    
+    .preview-article .alert-caution {
+      background-color: var(--color-caution-bg);
+      border-left-color: var(--color-caution-border);
+    }
+    .preview-article .alert-caution .alert-title { color: var(--color-caution-text); }
+    
+    /* Task list checkboxes */
+    .preview-article .task-list-item {
+      list-style: none;
+      margin-left: -1.5em;
+    }
+    
+    .preview-article .task-list-item input[type="checkbox"] {
+      margin-right: 0.5em;
+    }
+    
+    /* Context Menu */
+    .context-menu {
+      position: fixed;
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-lg);
+      min-width: 180px;
+      padding: var(--space-xs) 0;
+      z-index: 1000;
+      display: none;
+    }
+    
+    .context-menu.visible {
+      display: block;
+    }
+    
+    .context-menu-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .context-menu-item:hover {
+      background-color: var(--color-bg-hover);
+      color: var(--color-text-primary);
+    }
+    
+    .context-menu-item.danger:hover {
+      background-color: var(--color-caution-bg);
+      color: var(--color-caution-text);
+    }
+    
+    .context-menu-item svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    .context-menu-separator {
+      height: 1px;
+      background-color: var(--color-border-subtle);
+      margin: var(--space-xs) 0;
+    }
+    
+    /* Modal Dialog */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--transition-fast);
+    }
+    
+    .modal-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .modal-dialog {
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-lg);
+      width: 400px;
+      max-width: 90vw;
+    }
+    
+    .modal-header {
+      padding: var(--space-lg);
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    
+    .modal-title {
+      margin: 0;
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+    
+    .modal-body {
+      padding: var(--space-lg);
+    }
+    
+    .modal-input {
+      width: 100%;
+      padding: var(--space-sm) var(--space-md);
+      background-color: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius);
+      color: var(--color-text-primary);
+      font-size: var(--font-size-base);
+      font-family: var(--font-sans);
+    }
+    
+    .modal-input:focus {
+      outline: none;
+      border-color: var(--color-text-link);
+      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+    }
+    
+    .modal-hint {
+      margin-top: var(--space-sm);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+    }
+    
+    .modal-footer {
+      padding: var(--space-md) var(--space-lg);
+      border-top: 1px solid var(--color-border-subtle);
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-sm);
+    }
+    
+    /* Empty state */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-tertiary);
+      padding: var(--space-xl);
+      text-align: center;
+    }
+    
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: var(--space-md);
+      opacity: 0.5;
+    }
+    
+    .empty-state-title {
+      font-size: var(--font-size-lg);
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-sm);
+    }
+    
+    .empty-state-text {
+      font-size: var(--font-size-sm);
+    }
+    
+    /* Status bar */
+    .status-bar {
+      height: 28px;
+      background-color: var(--color-bg-secondary);
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-md);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+    }
+    
+    .status-left, .status-right {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+    
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="editor-header">
+    <div class="editor-logo">
+      <img src="/svg/logo.svg" alt="Logo">
+      <span>MarkStack</span>
+      <span class="editor-title-text">Editor</span>
+    </div>
+    
+    <div class="editor-actions">
+      <button class="editor-btn" id="refresh-tree" title="Refresh file tree">
+        <svg viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+          <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+        </svg>
+        Refresh
+      </button>
+      <button class="editor-btn primary" id="save-btn" title="Save (Ctrl+S)">
+        <svg viewBox="0 0 16 16" fill="currentColor">
+          <path d="M11.997 1.414l2.59 2.59A2 2 0 0 1 15 5.413V13.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 13.5v-11A1.5 1.5 0 0 1 2.5 1h7.086a2 2 0 0 1 1.414.586l.997.828zM2 2.5v11a.5.5 0 0 0 .5.5H4v-4.5A1.5 1.5 0 0 1 5.5 8h5a1.5 1.5 0 0 1 1.5 1.5V14h1.5a.5.5 0 0 0 .5-.5V5.414a1 1 0 0 0-.293-.707l-2.59-2.59A1 1 0 0 0 10.586 2H2.5a.5.5 0 0 0-.5.5zm9 11.5V9.5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0-.5.5V14h6z"/>
+        </svg>
+        Save
+      </button>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"></circle>
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+  
+  <!-- Main Editor Area -->
+  <div class="editor-main">
+    <!-- File Tree Panel -->
+    <div class="file-tree-panel">
+      <div class="file-tree-header">
+        <span class="file-tree-title">Content</span>
+        <div class="file-tree-actions">
+          <button class="file-tree-btn" id="new-file-root" title="New File">
+            <svg viewBox="0 0 16 16" fill="currentColor">
+              <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 9 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/>
+              <path d="M8 7a.5.5 0 0 1 .5.5V10H11a.5.5 0 0 1 0 1H8.5v2.5a.5.5 0 0 1-1 0V11H5a.5.5 0 0 1 0-1h2.5V7.5A.5.5 0 0 1 8 7Z"/>
+            </svg>
+          </button>
+          <button class="file-tree-btn" id="new-folder-root" title="New Folder">
+            <svg viewBox="0 0 16 16" fill="currentColor">
+              <path d="M1.75 1A1.75 1.75 0 0 0 0 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0 0 16 13.25v-8.5A1.75 1.75 0 0 0 14.25 3H7.5a.25.25 0 0 1-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1H1.75Zm6.25 6a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5a.5.5 0 0 1 .5-.5Z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="file-tree-content" id="file-tree"></div>
+    </div>
+    
+    <!-- Editor Panel -->
+    <div class="editor-panel">
+      <div class="editor-toolbar">
+        <span class="editor-file-path" id="current-file-path">
+          <span class="path-segment">No file selected</span>
+        </span>
+        <span class="editor-unsaved" id="unsaved-indicator">Unsaved</span>
+        <div class="editor-toolbar-right">
+          <button class="scroll-sync-btn active" id="scroll-sync-btn" title="Sync scrolling between editor and preview">
+            <svg class="icon-locked" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M4 4a4 4 0 0 1 8 0v2h.25c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 12.25 15h-8.5A1.75 1.75 0 0 1 2 13.25v-5.5C2 6.784 2.784 6 3.75 6H4Zm8.25 3.5h-8.5a.25.25 0 0 0-.25.25v5.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-5.5a.25.25 0 0 0-.25-.25ZM10.5 6V4a2.5 2.5 0 1 0-5 0v2Z"/>
+            </svg>
+            <svg class="icon-unlocked" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M5.5 4a2.5 2.5 0 0 1 5 0v2h-1V4a1.5 1.5 0 1 0-3 0v2H4V4a4 4 0 0 1 8 0v2h.25c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 12.25 15h-8.5A1.75 1.75 0 0 1 2 13.25v-5.5C2 6.784 2.784 6 3.75 6H4V4a4 4 0 0 1 1.5-.001Zm-1.75 3.5a.25.25 0 0 0-.25.25v5.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-5.5a.25.25 0 0 0-.25-.25Z"/>
+            </svg>
+            <span class="scroll-sync-label">Sync Scroll</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="editor-content">
+        <!-- Empty state when no file selected -->
+        <div class="empty-state" id="empty-state">
+          <svg viewBox="0 0 16 16" fill="currentColor">
+            <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 9 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/>
+          </svg>
+          <div class="empty-state-title">No file selected</div>
+          <div class="empty-state-text">Select a file from the tree to start editing</div>
+        </div>
+        
+        <!-- Split view: Editor | Preview -->
+        <div class="split-editor" id="split-editor" style="display: none;">
+          <div class="split-header">Markdown</div>
+          <div class="markdown-editor">
+            <div class="editor-with-lines">
+              <div class="line-numbers" id="line-numbers"></div>
+              <div class="editor-highlight-container">
+                <div class="markdown-highlight" id="markdown-highlight"></div>
+                <textarea class="markdown-textarea" id="markdown-input" placeholder="Start writing markdown..." spellcheck="false"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="split-preview" id="split-preview" style="display: none;">
+          <!-- Editor Collapse Toggle - inside preview for proper positioning -->
+          <button class="editor-collapse-toggle" id="editor-collapse-toggle" title="Toggle editor (show preview only)">
+            <svg class="collapse-icon" viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
+              <path d="M7.78 12.53a.75.75 0 0 1-1.06 0L2.47 8.28a.75.75 0 0 1 0-1.06l4.25-4.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042L4.81 7h7.44a.75.75 0 0 1 0 1.5H4.81l2.97 2.97a.75.75 0 0 1 0 1.06Z"/>
+            </svg>
+            <svg class="expand-icon" viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
+              <path d="M8.22 3.47a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l2.97-2.97H3.75a.75.75 0 0 1 0-1.5h7.44L8.22 4.53a.75.75 0 0 1 0-1.06Z"/>
+            </svg>
+          </button>
+          <div class="split-header">Preview</div>
+          <div class="preview-content">
+            <article class="preview-article" id="preview-output"></article>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="status-left">
+      <span class="status-item" id="status-lines">Lines: 0</span>
+      <span class="status-item" id="status-words">Words: 0</span>
+    </div>
+    <div class="status-right">
+      <span class="status-item">Markdown</span>
+    </div>
+  </div>
+  
+  <!-- Context Menu -->
+  <div class="context-menu" id="context-menu">
+    <div class="context-menu-item" data-action="new-file">
+      <svg viewBox="0 0 16 16" fill="currentColor">
+        <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 9 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/>
+      </svg>
+      New File
+    </div>
+    <div class="context-menu-item" data-action="new-folder">
+      <svg viewBox="0 0 16 16" fill="currentColor">
+        <path d="M1.75 1A1.75 1.75 0 0 0 0 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0 0 16 13.25v-8.5A1.75 1.75 0 0 0 14.25 3H7.5a.25.25 0 0 1-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1H1.75Z"/>
+      </svg>
+      New Folder
+    </div>
+    <div class="context-menu-separator"></div>
+    <div class="context-menu-item" data-action="rename">
+      <svg viewBox="0 0 16 16" fill="currentColor">
+        <path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm.176 4.823L9.75 4.81l-6.286 6.287a.253.253 0 0 0-.064.108l-.558 1.953 1.953-.558a.253.253 0 0 0 .108-.064Zm1.238-3.763a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354Z"/>
+      </svg>
+      Rename
+    </div>
+    <div class="context-menu-separator"></div>
+    <div class="context-menu-item danger" data-action="delete">
+      <svg viewBox="0 0 16 16" fill="currentColor">
+        <path d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"/>
+      </svg>
+      Delete
+    </div>
+  </div>
+  
+  <!-- Modal Dialog -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Dialog</h3>
+      </div>
+      <div class="modal-body">
+        <input type="text" class="modal-input" id="modal-input" placeholder="">
+        <div class="modal-hint" id="modal-hint"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="editor-btn" id="modal-cancel">Cancel</button>
+        <button class="editor-btn primary" id="modal-confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal Dialog -->
+  <div class="modal-overlay" id="confirm-modal-overlay">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="confirm-modal-title">Confirm</h3>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-modal-message" id="confirm-modal-message">Are you sure?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="editor-btn" id="confirm-modal-cancel">Cancel</button>
+        <button class="editor-btn danger" id="confirm-modal-confirm">Discard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load markdown-it and plugins from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.0.0/dist/markdown-it.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  
+  <script>
+    /**
+     * MarkStack Editor - Client-side Application
+     * 
+     * Interactive markdown editor with live preview, file tree navigation,
+     * syntax highlighting, scroll sync, and GitHub-style alerts.
+     * 
+     * @version 1.1.4
+     * @license GPL-3.0
+     */
+    (function() {
+      'use strict';
+
+      // =========================================================================
+      // Application State
+      // =========================================================================
+      
+      /** @type {string|null} Currently opened file path relative to content/ */
+      let currentFilePath = null;
+      
+      /** @type {string} Original content when file was loaded (for unsaved detection) */
+      let originalContent = '';
+      
+      /** @type {boolean} Whether there are unsaved changes in the editor */
+      let hasUnsavedChanges = false;
+      
+      /** @type {Object|null} Target item for context menu operations */
+      let contextTarget = null;
+      
+      /** @type {boolean} Whether scroll sync between editor and preview is enabled */
+      let scrollSyncEnabled = true;
+      
+      /** @type {string|null} Which pane initiated the current scroll ('editor' or 'preview') */
+      let scrollSource = null;
+      
+      /** @type {number|null} Timeout ID for scroll source reset */
+      let scrollTimeout = null;
+      
+      /** @type {Function|null} Callback for modal dialog confirmation */
+      let modalCallback = null;
+
+      // =========================================================================
+      // SVG Icons
+      // =========================================================================
+      
+      /** File tree navigation icons */
+      const icons = {
+        folder: '<svg class="tree-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1A1.75 1.75 0 0 0 0 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0 0 16 13.25v-8.5A1.75 1.75 0 0 0 14.25 3H7.5a.25.25 0 0 1-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1H1.75Z"/></svg>',
+        file: '<svg class="tree-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 9 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/></svg>',
+        chevron: '<svg class="tree-chevron" viewBox="0 0 16 16" fill="currentColor"><path d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06Z"/></svg>'
+      };
+      
+      /** Alert type icons for GitHub-style callouts in preview */
+      const alertIcons = {
+        note: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill="currentColor" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>',
+        tip: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill="currentColor" d="M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.411.537.896.621 1.49a.75.75 0 0 1-1.484.211c-.04-.282-.163-.547-.37-.847a8.456 8.456 0 0 0-.542-.68c-.084-.1-.173-.205-.268-.32C3.201 7.75 2.5 6.766 2.5 5.25 2.5 2.31 4.863 0 8 0s5.5 2.31 5.5 5.25c0 1.516-.701 2.5-1.328 3.259-.095.115-.184.22-.268.319-.207.245-.383.453-.541.681-.208.3-.33.565-.37.847a.751.751 0 0 1-1.485-.212c.084-.593.337-1.078.621-1.489.203-.292.45-.584.673-.848.075-.088.147-.173.213-.253.561-.679.985-1.32.985-2.304 0-2.06-1.637-3.75-4-3.75ZM5.75 12h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5ZM6 15.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z"/></svg>',
+        important: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill="currentColor" d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg>',
+        warning: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill="currentColor" d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg>',
+        caution: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill="currentColor" d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>'
+      };
+      
+      // =========================================================================
+      // Mermaid Diagram Support
+      // =========================================================================
+      
+      /**
+       * Initialize Mermaid with theme-aware configuration.
+       */
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+      });
+      
+      /**
+       * Render all Mermaid diagram blocks in the preview.
+       * Converts fenced code blocks with mermaid language to SVG diagrams.
+       */
+      async function renderMermaid() {
+        const mermaidBlocks = previewOutput.querySelectorAll('pre.mermaid');
+        for (const block of mermaidBlocks) {
+          const code = block.textContent;
+          const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+          try {
+            const { svg } = await mermaid.render(id, code);
+            block.innerHTML = svg;
+            block.classList.add('mermaid-rendered');
+          } catch (e) {
+            block.innerHTML = '<div class="mermaid-error">Mermaid syntax error: ' + e.message + '</div>';
+          }
+        }
+      }
+      
+      // =========================================================================
+      // DOM Element References
+      // =========================================================================
+      
+      // File tree
+      const fileTreeEl = document.getElementById('file-tree');
+      
+      // Editor components
+      const markdownInput = document.getElementById('markdown-input');
+      const markdownHighlight = document.getElementById('markdown-highlight');
+      const lineNumbers = document.getElementById('line-numbers');
+      const splitEditor = document.getElementById('split-editor');
+      const editorCollapseToggle = document.getElementById('editor-collapse-toggle');
+      const editorContent = document.querySelector('.editor-content');
+      
+      // Preview components
+      const previewOutput = document.getElementById('preview-output');
+      const splitPreview = document.getElementById('split-preview');
+      const previewContent = document.querySelector('.preview-content');
+      
+      // UI state elements
+      const emptyState = document.getElementById('empty-state');
+      const currentFilePath_El = document.getElementById('current-file-path');
+      const unsavedIndicator = document.getElementById('unsaved-indicator');
+      const statusLines = document.getElementById('status-lines');
+      const statusWords = document.getElementById('status-words');
+      
+      // Toolbar buttons
+      const saveBtn = document.getElementById('save-btn');
+      const refreshBtn = document.getElementById('refresh-tree');
+      const themeToggle = document.getElementById('theme-toggle');
+      const scrollSyncBtn = document.getElementById('scroll-sync-btn');
+      const newFileRoot = document.getElementById('new-file-root');
+      const newFolderRoot = document.getElementById('new-folder-root');
+      
+      // Context menu
+      const contextMenu = document.getElementById('context-menu');
+      
+      // Modal dialog
+      const modalOverlay = document.getElementById('modal-overlay');
+      const modalTitle = document.getElementById('modal-title');
+      const modalInput = document.getElementById('modal-input');
+      const modalHint = document.getElementById('modal-hint');
+      const modalCancel = document.getElementById('modal-cancel');
+      const modalConfirm = document.getElementById('modal-confirm');
+      
+      // Confirmation modal
+      const confirmModalOverlay = document.getElementById('confirm-modal-overlay');
+      const confirmModalTitle = document.getElementById('confirm-modal-title');
+      const confirmModalMessage = document.getElementById('confirm-modal-message');
+      const confirmModalCancel = document.getElementById('confirm-modal-cancel');
+      const confirmModalConfirm = document.getElementById('confirm-modal-confirm');
+      
+      // =========================================================================
+      // Markdown Processor Configuration
+      // =========================================================================
+      
+      /**
+       * Initialize markdown-it with highlight.js for code syntax highlighting.
+       * Configured to match the build.js markdown processing pipeline.
+       */
+      const md = window.markdownit({
+        html: true,
+        linkify: true,
+        typographer: true,
+        highlight: function(str, lang) {
+          // Handle Mermaid diagrams - wrap for client-side rendering
+          if (lang === 'mermaid') {
+            return '<pre class="mermaid">' + str + '</pre>';
+          }
+          // Syntax highlight with highlight.js if language is supported
+          if (lang && hljs.getLanguage(lang)) {
+            try {
+              return '<pre class="hljs"><code>' +
+                hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+                '</code></pre>';
+            } catch (e) {
+              // Fall through to plain text
+            }
+          }
+          return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
+        }
+      });
+      
+      /**
+       * GitHub-style alerts plugin for markdown-it.
+       * Transforms blockquotes starting with [!NOTE], [!TIP], etc. into styled alerts.
+       */
+      md.core.ruler.after('block', 'github-alerts', function(state) {
+        const tokens = state.tokens;
+        
+        for (let i = 0; i < tokens.length; i++) {
+          if (tokens[i].type === 'blockquote_open') {
+            let j = i + 1;
+            while (j < tokens.length && tokens[j].type !== 'blockquote_close') {
+              if (tokens[j].type === 'inline') {
+                const content = tokens[j].content;
+                const alertMatch = content.match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*/i);
+                
+                if (alertMatch) {
+                  const alertType = alertMatch[1].toUpperCase();
+                  const alertTypeLower = alertType.toLowerCase();
+                  const icon = alertIcons[alertTypeLower] || '';
+                  tokens[i].attrJoin('class', 'alert');
+                  tokens[i].attrJoin('class', 'alert-' + alertTypeLower);
+                  tokens[j].content = content.replace(alertMatch[0], '');
+                  tokens[j].content = '<span class="alert-title"><span class="alert-icon">' + icon + '</span>' + alertType + '</span>\n' + tokens[j].content;
+                }
+              }
+              j++;
+            }
+          }
+        }
+      });
+      
+      // =========================================================================
+      // Theme Toggle
+      // =========================================================================
+      
+      /**
+       * Apply theme to the document and update Mermaid configuration.
+       * 
+       * @param {string} theme - Theme name ('dark' or 'light')
+       */
+      function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        
+        // Update Mermaid theme configuration
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: theme === 'dark' ? 'dark' : 'default'
+        });
+        
+        // Re-render any visible Mermaid diagrams
+        renderMermaid();
+      }
+      
+      themeToggle.addEventListener('click', function() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+      });
+      
+      // =========================================================================
+      // Editor Collapse Toggle
+      // =========================================================================
+      
+      editorCollapseToggle.addEventListener('click', function() {
+        editorContent.classList.toggle('editor-collapsed');
+      });
+      
+      // =========================================================================
+      // File Tree Management
+      // =========================================================================
+      
+      /**
+       * Load the file tree from the server and render it.
+       */
+      async function loadFileTree() {
+        try {
+          const res = await fetch('/api/tree');
+          const tree = await res.json();
+          renderTree(tree, fileTreeEl);
+        } catch (err) {
+          console.error('Failed to load file tree:', err);
+          fileTreeEl.innerHTML = '<div style="padding: 1rem; color: var(--color-text-tertiary);">Failed to load files</div>';
+        }
+      }
+      
+      /**
+       * Render file tree items recursively into the container.
+       * 
+       * @param {Array<Object>} items - Array of file/folder objects
+       * @param {HTMLElement} container - DOM element to render into
+       * @param {number} [level=0] - Current nesting level
+       */
+      function renderTree(items, container, level = 0) {
+        if (level === 0) {
+          container.innerHTML = '';
+        }
+        
+        if (!items || items.length === 0) {
+          if (level === 0) {
+            container.innerHTML = '<div style="padding: 1rem; color: var(--color-text-tertiary);">No files found</div>';
+          }
+          return;
+        }
+        
+        const ul = document.createElement('ul');
+        ul.className = 'tree-list';
+        
+        for (const item of items) {
+          const li = document.createElement('li');
+          li.className = 'tree-item';
+          li.dataset.path = item.path;
+          li.dataset.type = item.type;
+          
+          const header = document.createElement('div');
+          header.className = 'tree-item-header';
+          
+          if (item.type === 'folder') {
+            header.innerHTML = icons.chevron + icons.folder + '<span class="tree-name">' + escapeHtml(item.name) + '</span>';
+            li.appendChild(header);
+            
+            if (item.children && item.children.length > 0) {
+              const childrenDiv = document.createElement('div');
+              childrenDiv.className = 'tree-children';
+              renderTree(item.children, childrenDiv, level + 1);
+              li.appendChild(childrenDiv);
+            }
+            
+            // Toggle folder expand/collapse
+            header.addEventListener('click', function(e) {
+              e.stopPropagation();
+              const chevron = header.querySelector('.tree-chevron');
+              const children = li.querySelector('.tree-children');
+              if (children) {
+                children.classList.toggle('expanded');
+                chevron.classList.toggle('expanded');
+              }
+            });
+          } else {
+            header.innerHTML = '<span class="tree-chevron hidden"></span>' + icons.file + '<span class="tree-name">' + escapeHtml(item.name) + '</span>';
+            li.appendChild(header);
+            
+            // Load file on click
+            header.addEventListener('click', function(e) {
+              e.stopPropagation();
+              loadFile(item.path);
+              
+              // Mark as active
+              document.querySelectorAll('.tree-item-header.active').forEach(el => el.classList.remove('active'));
+              header.classList.add('active');
+            });
+          }
+          
+          // Right-click context menu
+          header.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            showContextMenu(e.pageX, e.pageY, item);
+          });
+          
+          ul.appendChild(li);
+        }
+        
+        container.appendChild(ul);
+      }
+      
+      /**
+       * Escape HTML special characters for safe display.
+       * 
+       * @param {string} text - Text to escape
+       * @returns {string} HTML-escaped text
+       */
+      function escapeHtml(text) {
+        return text
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      }
+      
+      // =========================================================================
+      // File Loading and Saving
+      // =========================================================================
+      
+      /**
+       * Load a file from the server into the editor.
+       * Prompts for confirmation if there are unsaved changes.
+       * 
+       * @param {string} filePath - Relative path to the file within content/
+       */
+      async function loadFile(filePath) {
+        if (hasUnsavedChanges) {
+          const confirmed = await showConfirmModal(
+            'Unsaved Changes',
+            'You have unsaved changes. Do you want to discard them?',
+            'Discard'
+          );
+          if (!confirmed) {
+            return;
+          }
+        }
+        
+        try {
+          const res = await fetch('/api/file?path=' + encodeURIComponent(filePath));
+          const data = await res.json();
+          
+          if (data.error) {
+            alert('Error: ' + data.error);
+            return;
+          }
+          
+          currentFilePath = filePath;
+          originalContent = data.content;
+          markdownInput.value = data.content;
+          hasUnsavedChanges = false;
+          
+          // Reset scroll positions to top
+          markdownInput.scrollTop = 0;
+          markdownHighlight.scrollTop = 0;
+          lineNumbers.scrollTop = 0;
+          previewContent.scrollTop = 0;
+          
+          // Show editor
+          emptyState.style.display = 'none';
+          splitEditor.style.display = 'flex';
+          splitPreview.style.display = 'flex';
+          
+          updateFilePath();
+          updatePreview();
+          updateLineNumbers();
+          updateSyntaxHighlight();
+          updateStats();
+          updateUnsavedIndicator();
+        } catch (err) {
+          console.error('Failed to load file:', err);
+          alert('Failed to load file');
+        }
+      }
+      
+      /**
+       * Save the current file to the server.
+       * Updates the original content reference on success.
+       */
+      async function saveFile() {
+        if (!currentFilePath) return;
+        
+        try {
+          const res = await fetch('/api/file', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              path: currentFilePath,
+              content: markdownInput.value
+            })
+          });
+          
+          const data = await res.json();
+          
+          if (data.error) {
+            alert('Error saving: ' + data.error);
+            return;
+          }
+          
+          originalContent = markdownInput.value;
+          hasUnsavedChanges = false;
+          updateUnsavedIndicator();
+        } catch (err) {
+          console.error('Failed to save file:', err);
+          alert('Failed to save file');
+        }
+      }
+      
+      // =========================================================================
+      // UI Update Functions
+      // =========================================================================
+      
+      /**
+       * Update the file path display in the toolbar.
+       */
+      function updateFilePath() {
+        if (!currentFilePath) {
+          currentFilePath_El.innerHTML = '<span class="path-segment">No file selected</span>';
+          return;
+        }
+        
+        const parts = currentFilePath.split('/');
+        const fileName = parts.pop();
+        const pathPart = parts.join('/');
+        
+        if (pathPart) {
+          currentFilePath_El.innerHTML = '<span class="path-segment">' + escapeHtml(pathPart) + '/</span><span class="path-file">' + escapeHtml(fileName) + '</span>';
+        } else {
+          currentFilePath_El.innerHTML = '<span class="path-file">' + escapeHtml(fileName) + '</span>';
+        }
+      }
+      
+      /**
+       * Render markdown content to the preview pane.
+       * Strips frontmatter before rendering.
+       */
+      function updatePreview() {
+        let content = markdownInput.value;
+        
+        // Strip frontmatter (YAML between --- markers at start of file)
+        const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n?/;
+        const match = content.match(frontmatterRegex);
+        if (match) {
+          content = content.slice(match[0].length);
+        }
+        
+        previewOutput.innerHTML = md.render(content);
+        
+        // Re-render Mermaid diagrams
+        renderMermaid();
+      }
+      
+      /**
+       * Update line number display to match editor content.
+       */
+      function updateLineNumbers() {
+        const lines = markdownInput.value.split('\n').length;
+        let html = '';
+        for (let i = 1; i <= lines; i++) {
+          html += '<div class="line-number">' + i + '</div>';
+        }
+        lineNumbers.innerHTML = html;
+      }
+      
+      // =========================================================================
+      // Markdown Syntax Highlighting (Editor)
+      // =========================================================================
+      
+      /**
+       * Apply syntax highlighting to markdown text for the editor backdrop.
+       * Handles code blocks, frontmatter, headers, formatting, and more.
+       * 
+       * @param {string} text - Raw markdown text
+       * @returns {string} HTML with syntax highlighting spans
+       */
+      function highlightMarkdown(text) {
+        // First, extract and highlight code blocks separately
+        const codeBlocks = [];
+        let processedText = text.replace(/(```(\w*)\n)([\s\S]*?)(```)/g, function(match, opening, lang, code, closing) {
+          const index = codeBlocks.length;
+          
+          // Highlight the code if language is specified
+          let highlightedCode;
+          if (lang && hljs.getLanguage(lang)) {
+            try {
+              highlightedCode = hljs.highlight(code, { language: lang, ignoreIllegals: true }).value;
+            } catch (e) {
+              highlightedCode = escapeHtml(code);
+            }
+          } else {
+            highlightedCode = escapeHtml(code);
+          }
+          
+          // Store the highlighted block with fence markers styled
+          codeBlocks.push(
+            '<span class="md-code-fence">' + escapeHtml(opening.trimEnd()) + '</span>\n' +
+            '<span class="md-code-content">' + highlightedCode + '</span>' +
+            '<span class="md-code-fence">' + escapeHtml(closing) + '</span>'
+          );
+          
+          return '%%CODEBLOCK' + index + '%%';
+        });
+        
+        // Now escape and highlight the rest
+        let html = escapeHtml(processedText);
+        
+        // Frontmatter (must be at start)
+        html = html.replace(/^(---\n[\s\S]*?\n---)/m, '<span class="md-frontmatter">$1</span>');
+        
+        // Headers
+        html = html.replace(/^(#{1,6}\s+.*)$/gm, '<span class="md-header">$1</span>');
+        
+        // Bold **text** or __text__
+        html = html.replace(/(\*\*[^*]+\*\*|__[^_]+__)/g, '<span class="md-bold">$1</span>');
+        
+        // Italic *text* or _text_ (but not inside words)
+        html = html.replace(/(?<![*_])(\*[^*\n]+\*|_[^_\n]+_)(?![*_])/g, '<span class="md-italic">$1</span>');
+        
+        // Inline code `code`
+        html = html.replace(/(`[^`\n]+`)/g, '<span class="md-code">$1</span>');
+        
+        // Links [text](url)
+        html = html.replace(/(\[)([^\]]+)(\]\()([^)]+)(\))/g, 
+          '$1<span class="md-link-text">$2</span>$3<span class="md-link-url">$4</span>$5');
+        
+        // Images ![alt](url)
+        html = html.replace(/(!\[)([^\]]*)(\]\()([^)]+)(\))/g,
+          '$1<span class="md-link-text">$2</span>$3<span class="md-link-url">$4</span>$5');
+        
+        // List items (- or * or + or 1.)
+        html = html.replace(/^(\s*)([-*+]|\d+\.)\s/gm, '$1<span class="md-list">$2</span> ');
+        
+        // Blockquotes
+        html = html.replace(/^(&gt;\s*.*)$/gm, '<span class="md-blockquote">$1</span>');
+        
+        // Alerts [!NOTE], [!TIP], etc.
+        html = html.replace(/(\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\])/gi, '<span class="md-alert">$1</span>');
+        
+        // Horizontal rules
+        html = html.replace(/^([-*_]{3,})$/gm, '<span class="md-hr">$1</span>');
+        
+        // Restore code blocks
+        for (let i = 0; i < codeBlocks.length; i++) {
+          html = html.replace('%%CODEBLOCK' + i + '%%', codeBlocks[i]);
+        }
+        
+        return html;
+      }
+      
+      /**
+       * Update the syntax highlight backdrop to match editor content.
+       */
+      function updateSyntaxHighlight() {
+        const text = markdownInput.value;
+        // Add a trailing newline to match textarea behavior
+        markdownHighlight.innerHTML = highlightMarkdown(text) + '\n';
+      }
+      
+      /**
+       * Update the status bar with line and word counts.
+       */
+      function updateStats() {
+        const content = markdownInput.value;
+        const lines = content.split('\n').length;
+        const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+        statusLines.textContent = 'Lines: ' + lines;
+        statusWords.textContent = 'Words: ' + words;
+      }
+      
+      /**
+       * Show or hide the unsaved changes indicator.
+       */
+      function updateUnsavedIndicator() {
+        unsavedIndicator.classList.toggle('visible', hasUnsavedChanges);
+      }
+      
+      // =========================================================================
+      // Editor Event Handlers
+      // =========================================================================
+      
+      /**
+       * Handle input events in the markdown editor.
+       * Updates all related UI components on each keystroke.
+       */
+      markdownInput.addEventListener('input', function() {
+        hasUnsavedChanges = markdownInput.value !== originalContent;
+        updatePreview();
+        updateLineNumbers();
+        updateSyntaxHighlight();
+        updateStats();
+        updateUnsavedIndicator();
+      });
+      
+      // =========================================================================
+      // Scroll Synchronization
+      // =========================================================================
+      
+      /**
+       * Handle scroll events in the editor textarea.
+       * Syncs line numbers, highlight backdrop, and optionally the preview.
+       */
+      markdownInput.addEventListener('scroll', function() {
+        // Always sync line numbers and highlight backdrop
+        lineNumbers.scrollTop = markdownInput.scrollTop;
+        markdownHighlight.scrollTop = markdownInput.scrollTop;
+        markdownHighlight.scrollLeft = markdownInput.scrollLeft;
+        
+        // Sync to preview if enabled and not triggered by preview
+        if (scrollSyncEnabled && scrollSource !== 'preview') {
+          scrollSource = 'editor';
+          
+          const editorScrollMax = markdownInput.scrollHeight - markdownInput.clientHeight;
+          const previewScrollMax = previewContent.scrollHeight - previewContent.clientHeight;
+          
+          if (editorScrollMax > 0 && previewScrollMax > 0) {
+            const scrollPercent = markdownInput.scrollTop / editorScrollMax;
+            previewContent.scrollTop = scrollPercent * previewScrollMax;
+          }
+          
+          clearTimeout(scrollTimeout);
+          scrollTimeout = setTimeout(() => { scrollSource = null; }, 100);
+        }
+      });
+      
+      /**
+       * Handle scroll events in the preview pane.
+       * Syncs back to editor when scroll sync is enabled.
+       */
+      previewContent.addEventListener('scroll', function() {
+        if (scrollSyncEnabled && scrollSource !== 'editor') {
+          scrollSource = 'preview';
+          
+          const previewScrollMax = previewContent.scrollHeight - previewContent.clientHeight;
+          const editorScrollMax = markdownInput.scrollHeight - markdownInput.clientHeight;
+          
+          if (previewScrollMax > 0 && editorScrollMax > 0) {
+            const scrollPercent = previewContent.scrollTop / previewScrollMax;
+            markdownInput.scrollTop = scrollPercent * editorScrollMax;
+            lineNumbers.scrollTop = markdownInput.scrollTop;
+            markdownHighlight.scrollTop = markdownInput.scrollTop;
+          }
+          
+          clearTimeout(scrollTimeout);
+          scrollTimeout = setTimeout(() => { scrollSource = null; }, 100);
+        }
+      });
+      
+      /**
+       * Toggle scroll sync on button click.
+       */
+      scrollSyncBtn.addEventListener('click', function() {
+        scrollSyncEnabled = !scrollSyncEnabled;
+        scrollSyncBtn.classList.toggle('active', scrollSyncEnabled);
+      });
+      
+      // =========================================================================
+      // Keyboard Shortcuts
+      // =========================================================================
+      
+      document.addEventListener('keydown', function(e) {
+        // Ctrl+S / Cmd+S: Save file
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+          e.preventDefault();
+          saveFile();
+        }
+      });
+      
+      // Toolbar button handlers
+      saveBtn.addEventListener('click', saveFile);
+      refreshBtn.addEventListener('click', loadFileTree);
+      
+      // =========================================================================
+      // Context Menu
+      // =========================================================================
+      
+      /**
+       * Show the context menu at the specified position.
+       * 
+       * @param {number} x - X coordinate (page pixels)
+       * @param {number} y - Y coordinate (page pixels)
+       * @param {Object} item - File tree item that was right-clicked
+       */
+      function showContextMenu(x, y, item) {
+        contextTarget = item;
+        contextMenu.style.left = x + 'px';
+        contextMenu.style.top = y + 'px';
+        contextMenu.classList.add('visible');
+      }
+      
+      /**
+       * Hide the context menu.
+       */
+      function hideContextMenu() {
+        contextMenu.classList.remove('visible');
+        contextTarget = null;
+      }
+      
+      // Hide context menu on click outside
+      document.addEventListener('click', hideContextMenu);
+      document.addEventListener('contextmenu', function(e) {
+        if (!e.target.closest('.tree-item-header')) {
+          hideContextMenu();
+        }
+      });
+      
+      /**
+       * Handle context menu item clicks.
+       * Routes to appropriate action based on data-action attribute.
+       */
+      contextMenu.addEventListener('click', function(e) {
+        const action = e.target.closest('.context-menu-item')?.dataset.action;
+        if (!action || !contextTarget) return;
+        
+        const parentPath = contextTarget.type === 'folder' ? contextTarget.path : contextTarget.path.split('/').slice(0, -1).join('/');
+        
+        switch (action) {
+          case 'new-file':
+            showModal('New File', 'Enter file name:', 'new-file.md', 'Spaces will be replaced with dashes. .md extension will be added if missing.', function(name) {
+              createFile(parentPath, name);
+            });
+            break;
+          case 'new-folder':
+            showModal('New Folder', 'Enter folder name:', 'new-folder', 'Spaces will be replaced with dashes. A _index.md file will be created automatically.', function(name) {
+              createFolder(parentPath, name);
+            });
+            break;
+          case 'rename':
+            const currentName = contextTarget.path.split('/').pop();
+            showModal('Rename', 'Enter new name:', currentName, 'Spaces will be replaced with dashes.', function(newName) {
+              renameItem(contextTarget.path, newName, contextTarget.type === 'folder');
+            });
+            break;
+          case 'delete':
+            showConfirmModal(
+              'Delete Item',
+              'Are you sure you want to delete "' + contextTarget.path + '"?',
+              'Delete'
+            ).then(confirmed => {
+              if (confirmed) {
+                deleteItem(contextTarget.path);
+              }
+            });
+            break;
+        }
+        
+        hideContextMenu();
+      });
+      
+      // Root-level new file/folder buttons
+      newFileRoot.addEventListener('click', function() {
+        showModal('New File', 'Enter file name:', 'new-file.md', 'Spaces will be replaced with dashes. .md extension will be added if missing.', function(name) {
+          createFile('', name);
+        });
+      });
+      
+      newFolderRoot.addEventListener('click', function() {
+        showModal('New Folder', 'Enter folder name:', 'new-folder', 'Spaces will be replaced with dashes. A _index.md file will be created automatically.', function(name) {
+          createFolder('', name);
+        });
+      });
+      
+      // =========================================================================
+      // Modal Dialog
+      // =========================================================================
+      
+      /**
+       * Show a modal dialog for user input.
+       * 
+       * @param {string} title - Dialog title
+       * @param {string} placeholder - Input placeholder text
+       * @param {string} defaultValue - Default input value
+       * @param {string} hint - Help text shown below input
+       * @param {Function} callback - Called with input value on confirm
+       */
+      function showModal(title, placeholder, defaultValue, hint, callback) {
+        modalTitle.textContent = title;
+        modalInput.placeholder = placeholder;
+        modalInput.value = defaultValue;
+        modalHint.textContent = hint;
+        modalCallback = callback;
+        modalOverlay.classList.add('visible');
+        modalInput.focus();
+        modalInput.select();
+      }
+      
+      /**
+       * Hide the modal dialog and clear callback.
+       */
+      function hideModal() {
+        modalOverlay.classList.remove('visible');
+        modalCallback = null;
+      }
+      
+      /** @type {Function|null} Resolve function for confirm modal promise */
+      let confirmModalResolve = null;
+      
+      /**
+       * Show a confirmation modal dialog.
+       * Returns a promise that resolves to true (confirmed) or false (cancelled).
+       * 
+       * @param {string} title - Dialog title
+       * @param {string} message - Confirmation message
+       * @param {string} [confirmText='Confirm'] - Text for confirm button
+       * @returns {Promise<boolean>} Resolves true if confirmed, false if cancelled
+       */
+      function showConfirmModal(title, message, confirmText = 'Confirm') {
+        confirmModalTitle.textContent = title;
+        confirmModalMessage.textContent = message;
+        confirmModalConfirm.textContent = confirmText;
+        confirmModalOverlay.classList.add('visible');
+        confirmModalConfirm.focus();
+        
+        return new Promise(resolve => {
+          confirmModalResolve = resolve;
+        });
+      }
+      
+      /**
+       * Hide the confirmation modal and resolve with result.
+       * 
+       * @param {boolean} result - Whether user confirmed or cancelled
+       */
+      function hideConfirmModal(result) {
+        confirmModalOverlay.classList.remove('visible');
+        if (confirmModalResolve) {
+          confirmModalResolve(result);
+          confirmModalResolve = null;
+        }
+      }
+      
+      // Confirmation modal button handlers
+      confirmModalCancel.addEventListener('click', () => hideConfirmModal(false));
+      confirmModalConfirm.addEventListener('click', () => hideConfirmModal(true));
+      
+      confirmModalOverlay.addEventListener('click', function(e) {
+        if (e.target === confirmModalOverlay) hideConfirmModal(false);
+      });
+      
+      // Confirmation modal keyboard navigation
+      confirmModalOverlay.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          hideConfirmModal(false);
+        }
+        if (e.key === 'Enter') {
+          hideConfirmModal(true);
+        }
+      });
+      
+      // Modal button handlers
+      modalCancel.addEventListener('click', hideModal);
+      
+      modalOverlay.addEventListener('click', function(e) {
+        if (e.target === modalOverlay) hideModal();
+      });
+      
+      modalConfirm.addEventListener('click', function() {
+        if (modalCallback) {
+          modalCallback(modalInput.value);
+        }
+        hideModal();
+      });
+      
+      // Modal keyboard navigation
+      modalInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          modalConfirm.click();
+        }
+        if (e.key === 'Escape') {
+          hideModal();
+        }
+      });
+      
+      // =========================================================================
+      // File Operations (CRUD)
+      // =========================================================================
+      
+      /**
+       * Create a new markdown file.
+       * 
+       * @param {string} parentPath - Parent folder path (empty for root)
+       * @param {string} name - Filename (will be normalized)
+       */
+      async function createFile(parentPath, name) {
+        try {
+          const res = await fetch('/api/create-file', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parentPath, name })
+          });
+          const data = await res.json();
+          
+          if (data.error) {
+            alert('Error: ' + data.error);
+            return;
+          }
+          
+          await loadFileTree();
+          loadFile(data.path);
+        } catch (err) {
+          console.error('Failed to create file:', err);
+          alert('Failed to create file');
+        }
+      }
+      
+      /**
+       * Create a new folder with an _index.md file.
+       * 
+       * @param {string} parentPath - Parent folder path (empty for root)
+       * @param {string} name - Folder name (will be normalized)
+       */
+      async function createFolder(parentPath, name) {
+        try {
+          const res = await fetch('/api/create-folder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parentPath, name })
+          });
+          const data = await res.json();
+          
+          if (data.error) {
+            alert('Error: ' + data.error);
+            return;
+          }
+          
+          await loadFileTree();
+        } catch (err) {
+          console.error('Failed to create folder:', err);
+          alert('Failed to create folder');
+        }
+      }
+      
+      /**
+       * Rename a file or folder.
+       * 
+       * @param {string} oldPath - Current path
+       * @param {string} newName - New name (will be normalized)
+       * @param {boolean} isFolder - Whether the item is a folder
+       */
+      async function renameItem(oldPath, newName, isFolder) {
+        try {
+          const res = await fetch('/api/rename', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ oldPath, newName, isFolder })
+          });
+          const data = await res.json();
+          
+          if (data.error) {
+            alert('Error: ' + data.error);
+            return;
+          }
+          
+          if (currentFilePath === oldPath) {
+            currentFilePath = data.newPath;
+            updateFilePath();
+          }
+          
+          await loadFileTree();
+        } catch (err) {
+          console.error('Failed to rename:', err);
+          alert('Failed to rename');
+        }
+      }
+      
+      /**
+       * Delete a file or folder.
+       * Clears the editor if the deleted item was open.
+       * 
+       * @param {string} filePath - Path to delete
+       */
+      async function deleteItem(filePath) {
+        try {
+          const res = await fetch('/api/delete?path=' + encodeURIComponent(filePath), {
+            method: 'DELETE'
+          });
+          const data = await res.json();
+          
+          if (data.error) {
+            alert('Error: ' + data.error);
+            return;
+          }
+          
+          if (currentFilePath === filePath || currentFilePath?.startsWith(filePath + '/')) {
+            currentFilePath = null;
+            markdownInput.value = '';
+            previewOutput.innerHTML = '';
+            emptyState.style.display = 'flex';
+            splitEditor.style.display = 'none';
+            splitPreview.style.display = 'none';
+            editorContent.classList.remove('editor-collapsed');
+            updateFilePath();
+          }
+          
+          await loadFileTree();
+        } catch (err) {
+          console.error('Failed to delete:', err);
+          alert('Failed to delete');
+        }
+      }
+      
+      // =========================================================================
+      // Application Initialization
+      // =========================================================================
+      
+      // Load file tree on startup
+      loadFileTree();
+      
+    })();
+  </script>
+</body>
+</html>

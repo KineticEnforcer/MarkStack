@@ -65,6 +65,7 @@ Here are the commands you will use most often:
 |---------|---------|
 | `npm run build` | Generate the site once into `dist/` |
 | `npm run watch` | Rebuild automatically when files change |
+| `npm run editor` | Launch the visual editor with live preview |
 | `npm run serve` | Start a local preview server at `http://localhost:3000` |
 | `npm run clean` | Delete `dist/` for a fresh start |
 
@@ -76,6 +77,13 @@ npm run watch
 
 # Terminal 2: Preview server
 npm run serve
+```
+
+Or use the visual editor for a more integrated experience:
+
+```bash
+# Launch the visual editor
+npm run editor
 ```
 
 With this setup, you can edit markdown files, save them, and refresh your browser to see changes immediately.

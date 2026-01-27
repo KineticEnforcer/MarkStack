@@ -109,6 +109,7 @@ npm run build
 - **Task lists and footnotes** for checklists and academic-style references
 - **Syntax highlighting** for 190+ programming languages via highlight.js
 - **Mermaid diagrams** for flowcharts, sequence diagrams, and other visualizations
+- **Visual editor** with live preview, scroll sync, and file management
 
 ### User Experience
 
@@ -175,6 +176,8 @@ MarkStack includes comprehensive documentation covering all aspects of the syste
 ```
 markstack/
 ├── build.js              # Build script (single-file static site generator)
+├── editor-server.js      # Visual editor server
+├── editor.html           # Visual editor interface
 ├── siteconfig.json       # Site configuration
 ├── content/              # Markdown content directory
 │   ├── _index.md         # Homepage content (optional)
@@ -316,6 +319,7 @@ flowchart LR
 |---------|-------------|
 | `npm run build` | Generate static site to the `dist/` directory |
 | `npm run watch` | Rebuild automatically when content files change |
+| `npm run editor` | Launch the visual markdown editor with live preview |
 | `npm run serve` | Start a local preview server on port 3000 |
 | `npm run clean` | Remove the `dist/` directory |
 
@@ -327,6 +331,9 @@ npm run watch
 
 # Terminal 2: Serve the site locally
 npm run serve
+
+# Or use the visual editor for focused writing
+npm run editor
 ```
 
 ---
@@ -368,6 +375,53 @@ For automated deployments, see the [CI/CD Integration](content/build-deploy/ci-c
 - npm (included with Node.js)
 
 No additional build tools, compilers, or system dependencies are required.
+
+---
+
+## Changelog
+
+### Version 1.1.4 (January 2026)
+
+This release introduces the Visual Editor and significantly improves code quality across the codebase.
+
+#### New Features
+
+- **Visual Editor** (`npm run editor`)
+  - Browser-based markdown editor with live preview
+  - File tree panel for navigating and managing content
+  - Real-time preview styled exactly like the built site
+  - Scroll synchronization between editor and preview panels
+  - File management: create, rename, delete files and folders
+  - Keyboard shortcuts: Ctrl+S (save), Ctrl+B (build)
+  - Confirmation modals for unsaved changes and destructive actions
+
+#### Improvements
+
+- **Code Quality Refactoring**
+  - Added comprehensive JSDoc documentation to all source files
+  - Organized code with clear section separators and comments
+  - Improved function naming and code structure
+  - Professional-grade documentation following senior developer standards
+
+- **Editor Server** (`editor-server.js`)
+  - RESTful API for file operations (read, write, create, delete, rename)
+  - File tree endpoint for content navigation
+  - Build trigger endpoint for site regeneration
+  - Secure local-only access on port 3001
+
+- **Editor Interface** (`editor.html`)
+  - Split-panel layout with resizable sections
+  - Syntax highlighting for markdown editing
+  - GitHub-style alert rendering in preview
+  - Mermaid diagram support in preview
+  - Unsaved changes detection with visual indicator
+
+#### Documentation
+
+- New [Visual Editor](/authoring/visual-editor/) documentation page
+- Updated [Commands Reference](/build-deploy/commands/) with editor command
+- Updated [Project Structure](/getting-started/project-structure/) with editor files
+- Updated [Quickstart](/getting-started/quickstart/) with editor workflow
 
 ---
 

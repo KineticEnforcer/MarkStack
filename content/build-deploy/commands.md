@@ -1,6 +1,6 @@
 ---
 title: Commands Reference
-description: Complete reference for all MarkStack npm commands including build, watch, clean, and serve options with examples and use cases.
+description: Complete reference for all MarkStack npm commands including build, watch, clean, editor, and serve options with examples and use cases.
 ---
 
 # Commands Reference
@@ -13,8 +13,9 @@ MarkStack provides a set of npm scripts for building, developing, and previewing
 |---------|---------|
 | `npm run build` | Build the site for production |
 | `npm run watch` | Build and rebuild on file changes |
+| `npm run editor` | Launch the visual markdown editor |
 | `npm run clean` | Delete the dist folder |
-| `npx serve dist` | Preview the built site locally |
+| `npm run serve` | Preview the built site locally |
 
 ## npm run build
 
@@ -119,6 +120,56 @@ The watcher uses chokidar, a reliable cross-platform file watching library. It d
 - File deletions (removed pages)
 
 Each detected change triggers a full rebuild to ensure navigation and search index stay current.
+
+## npm run editor
+
+The `editor` command launches the visual markdown editor, a browser-based writing environment with live preview.
+
+### Usage
+
+```bash
+npm run editor
+```
+
+### What It Does
+
+1. Starts a local HTTP server on port 3001
+2. Opens the visual editor in your default browser
+3. Provides real-time markdown preview as you type
+4. Enables file management through a graphical interface
+
+### Output
+
+```
+🖊️  MarkStack Visual Editor
+
+Server running at http://localhost:3001
+Opening editor in browser...
+
+Press Ctrl+C to stop the server
+```
+
+### Features
+
+The visual editor provides:
+
+- **Live preview** with the same styling as your built site
+- **File tree** for navigating and managing content
+- **Scroll sync** to keep editor and preview aligned
+- **Save and build** buttons with keyboard shortcuts
+- **Syntax highlighting** for markdown and code blocks
+
+### When to Use
+
+- When writing new documentation where immediate preview is valuable
+- For focused content authoring sessions
+- When you want to see exactly how content will render
+- For users who prefer visual feedback while writing
+
+> [!TIP]
+> The visual editor is ideal for content creation. For quick edits, batch changes, or Git workflows, editing markdown files directly in your code editor works just as well.
+
+For complete editor documentation, see [Visual Editor](/authoring/visual-editor/).
 
 ## npm run clean
 

@@ -8,7 +8,7 @@
  * - Code block copy buttons
  * - Smooth scroll for anchor links
  * 
- * @version 1.0.0
+ * @version 1.1.4
  * @license GPL-3.0
  */
 

@@ -14,6 +14,8 @@ Here is the complete structure of a MarkStack project with explanations:
 ```
 markstack/
 ├── build.js              # The static site generator (single file)
+├── editor-server.js      # Visual editor server
+├── editor.html           # Visual editor interface
 ├── siteconfig.json       # Site-wide configuration
 ├── package.json          # npm scripts and dependencies
 ├── package-lock.json     # Locked dependency versions
@@ -159,7 +161,9 @@ Any manual changes to `dist/` disappear on the next build. To change something i
 
 Contains npm packages installed by `npm install`. This folder is managed by npm and excluded from version control. If you need different packages, edit `package.json` and run `npm install`, but do not modify `node_modules/` directly.
 
-## Understanding build.js
+## Understanding the Core Files
+
+### build.js
 
 The `build.js` file is the complete static site generator in a single file. You generally do not need to modify it for normal documentation work, but understanding what it does helps when troubleshooting:
 
@@ -180,6 +184,26 @@ Advanced users modify `build.js` to:
 - Create new template placeholders
 - Implement custom markdown extensions
 - Change URL generation rules
+
+### editor-server.js
+
+The visual editor server that provides a browser-based markdown editing environment. It runs on port 3001 and offers:
+
+- Real-time file management API
+- Live markdown preview
+- File tree navigation
+- Save and build functionality
+
+Start it with `npm run editor`. See [Visual Editor](/authoring/visual-editor/) for complete documentation.
+
+### editor.html
+
+The single-page application that provides the visual editor interface. It includes:
+
+- Split-panel layout (file tree, editor, preview)
+- Syntax highlighting for markdown
+- Live preview with site styling
+- Scroll synchronization between panels
 
 ## How Content Becomes Pages
 

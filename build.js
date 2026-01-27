@@ -5,7 +5,7 @@
  * Transforms markdown content into a fully searchable documentation website.
  * 
  * @module build
- * @version 1.0.0
+ * @version 1.1.4
  * @author MarkStack Contributors
  * @license GPL-3.0
  * @see {@link https://github.com/markstack/markstack}

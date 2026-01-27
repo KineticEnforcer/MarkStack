@@ -72,6 +72,17 @@ The [Examples](/authoring/examples/) page provides ready-to-use templates:
 
 These examples help you start new pages quickly without recreating boilerplate.
 
+### Visual Editor
+
+The [Visual Editor](/authoring/visual-editor/) guide covers the browser-based writing environment:
+
+- Live preview with identical styling to your built site
+- File tree for navigating and managing content
+- Scroll synchronization between editor and preview
+- Save and build functionality with keyboard shortcuts
+
+Use the visual editor when you want immediate feedback on how your content will appear.
+
 ## Recommended Reading Order
 
 If you are new to writing documentation in MarkStack, read these guides in order:
@@ -81,6 +92,7 @@ If you are new to writing documentation in MarkStack, read these guides in order
 3. **[Markdown Features](/authoring/markdown-features/)** third, for formatting options
 4. **[Media and Links](/authoring/media-and-links/)** fourth, for asset handling
 5. **[Examples](/authoring/examples/)** as needed, when creating new content
+6. **[Visual Editor](/authoring/visual-editor/)** for the integrated writing environment
 
 If you already know markdown basics, you can skip to specific guides for the information you need.
 

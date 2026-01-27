@@ -314,6 +314,24 @@ Save the file. Watch mode rebuilds. Refresh the browser. Your new page appears i
 > [!TIP]
 > Keep your terminals visible while authoring. When you save a file and nothing happens in the watch terminal, check that you saved to the correct location. When the build succeeds but the browser shows old content, try a hard refresh (Ctrl+Shift+R).
 
+## Alternative: Visual Editor
+
+If you prefer a more integrated writing experience, MarkStack includes a visual editor with live preview:
+
+```bash
+npm run editor
+```
+
+This opens a browser-based editor at `http://localhost:3001` with:
+
+- **File tree** for navigating your content
+- **Markdown editor** with syntax highlighting
+- **Live preview** styled exactly like your final site
+- **Scroll sync** to keep editor and preview aligned
+- **Save and build** buttons with keyboard shortcuts
+
+The visual editor is ideal for focused writing sessions where you want immediate feedback on how your content will appear. For complete documentation, see [Visual Editor](/authoring/visual-editor/).
+
 ## Next Steps
 
 You now know the MarkStack development workflow. Continue to [Project Structure](/getting-started/project-structure/) to understand which folders contain your content and which are generated.

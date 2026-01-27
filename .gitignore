@@ -12,6 +12,9 @@ Thumbs.db
 .vscode/
 .idea/
 
+# GitHub folder (local copilot instructions)
+.github/
+
 # Logs
 *.log
 npm-debug.log*

@@ -1,13 +1,14 @@
 {
   "name": "markstack",
-  "version": "1.0.0",
+  "version": "1.1.4",
   "description": "Static site generator for markdown-based knowledge bases",
   "main": "build.js",
   "scripts": {
     "build": "node build.js",
     "watch": "node build.js --watch",
     "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
-    "serve": "npx serve dist"
+    "serve": "npx serve dist",
+    "editor": "node editor-server.js"
   },
   "keywords": [
     "markdown",
